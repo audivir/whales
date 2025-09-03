@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from collections import Counter
-from typing import Sequence
+from collections.abc import Sequence
 
 import matplotlib.patheffects as PathEffects
 import matplotlib.pyplot as plt
@@ -70,11 +72,9 @@ def GetMurckoScaffoldSmiles(mol: Chem.Mol):
 
 
 def GetFrequentScaffolds(suppl, output_type="supplier"):
-    """
-    starting from a supplier file, the function computes the most frequently recurring scaffolds and returns them as a
+    """Starting from a supplier file, the function computes the most frequently recurring scaffolds and returns them as a
     supplier file (if output_type='supplier') or as a counter file.
     """
-
     scaff_list = []
     for mol in suppl:
         scaff_list.append(GetMurckoScaffoldSmiles(mol=mol))
@@ -100,9 +100,7 @@ def GetFrequentScaffolds(suppl, output_type="supplier"):
     return freq_scaffolds
 
 
-def PlotChargeMap(
-    mol: Chem.Mol, fig_name=None, lab_atom=False, text=False, MapMin=0, MapMax=1
-):
+def PlotChargeMap(mol: Chem.Mol, fig_name=None, lab_atom=False, text=False, MapMin=0, MapMax=1):
     # settings
     scale = -1  # size of dots
     coordscale = 1  # coordinate scaling
@@ -126,13 +124,7 @@ def PlotChargeMap(
     opts.bgColor = (1, 1, 1)
 
     fig: Figure = SimilarityMaps.GetSimilarityMapFromWeights(
-        mol,
-        charge,
-        coordScale=coordscale,
-        colorMap=colmap,
-        colors="w",
-        alpha=0,
-        scale=scale,
+        mol, charge, coordScale=coordscale, colorMap=colmap, colors="w", alpha=0, scale=scale
     )
 
     SimilarityMaps.Draw.MolDrawOptions.clearBackground

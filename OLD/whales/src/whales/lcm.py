@@ -14,12 +14,13 @@
 #   "Scaffold hopping from natural products to synthetic mimetics by holistic molecular similarity",
 #   Nature Communications Chemistry 1, 44, 2018.
 # ======================================================================================================================
+from __future__ import annotations
+
 import numpy as np
 
 
 def lmahal(x, w):
-    """
-    main function for calculating the atom-centred mahalanobis distance (ACM), used to compute remoteness and
+    """Main function for calculating the atom-centred mahalanobis distance (ACM), used to compute remoteness and
     isolation degree.
 
     ====================================================================================================================
@@ -35,7 +36,6 @@ def lmahal(x, w):
     Francesca Grisoni, 12/2016, v. alpha
     ETH Zurich
     """
-
     # preliminary
     n, p = x.shape  # matrix dimensions
 
@@ -52,9 +52,7 @@ def lmahal(x, w):
                 dist[i, j] = d / p
 
         # isolation and remoteness parameters from D
-        isol, rem, ir_ratio = is_rem(
-            dist, n
-        )  # calculates atomic parameters from the distance
+        isol, rem, ir_ratio = is_rem(dist, n)  # calculates atomic parameters from the distance
         res = np.concatenate((rem, isol, ir_ratio), axis=1)  # results concatenation
     else:
         res = np.full((1, 3), -999.0)  # sets missing values
@@ -64,8 +62,7 @@ def lmahal(x, w):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def docov(x, w):
-    """
-    Calculates the weighted covariance matrix centered on each atom. The original centred covariance (Todeschini et al.
+    """Calculates the weighted covariance matrix centered on each atom. The original centred covariance (Todeschini et al.
     2013) is weighted according to the atomic partial charges (normalized absolute values).
 
     ====================================================================================================================
@@ -78,7 +75,6 @@ def docov(x, w):
     Francesca Grisoni, 12/2016, v. alpha
     ETH Zurich
     """
-
     import numpy as np
 
     n, p = x.shape  # dimensions
@@ -92,7 +88,7 @@ def docov(x, w):
         den = n - 1
     else:
         den = sum(abs(w))
-        if den is 0:
+        if den == 0:
             den = n - 1
 
     w_abs = abs(w) / den
@@ -114,8 +110,7 @@ def docov(x, w):
 
 
 def domahal(i, j, x, cov):
-    """
-    Calculates the atom centred Mahalanobis distance between two atoms i and j when the covariance is centered in j.
+    """Calculates the atom centred Mahalanobis distance between two atoms i and j when the covariance is centered in j.
     ====================================================================================================================
     :param
     i, j: atoms whose distance has to be computed (when the covariance is centred in j)
@@ -140,8 +135,7 @@ def domahal(i, j, x, cov):
 
 
 def is_rem(dist, n):  # TODO remove n and calculate it here
-    """
-    Calculates isolation degree and remoteness from a distance matrix and their ratio.
+    """Calculates isolation degree and remoteness from a distance matrix and their ratio.
     ====================================================================================================================
     :param
     dist: atom-centred Mahalanobis
@@ -154,14 +148,11 @@ def is_rem(dist, n):  # TODO remove n and calculate it here
     Francesca Grisoni, 12/2016, v. alpha
     ETH Zurich
     """
-
     for i in range(n):
         dist[i, i] = None
 
     dist = np.matrix(dist)
-    isol = np.transpose(
-        np.nanmin(dist, axis=0)
-    )  # col minimum (transposed for dimensions)
+    isol = np.transpose(np.nanmin(dist, axis=0))  # col minimum (transposed for dimensions)
     rem = np.nanmean(dist, axis=1)  # row average
     ir_ratio = isol / rem  # ratio between isol and rem (transpose for dimensions)
 

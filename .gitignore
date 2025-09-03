@@ -1,2 +1,8 @@
-.mypy_cache
-__pycache__
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+build/
+*.egg-info/
+out.sdf
+temp_out_hits.sdf
+WHALES_after.csv

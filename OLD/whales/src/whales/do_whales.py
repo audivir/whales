@@ -11,11 +11,13 @@
 #   "Scaffold hopping from natural products to synthetic mimetics by holistic molecular similarity",
 #   Nature Communications Chemistry 1, 44, 2018.
 # ======================================================================================================================
+from __future__ import annotations
 
-from .lcm import lmahal
 import numpy as np
-import rdkit.Chem as Chem
+from rdkit import Chem
+
 from .chem_tools import GetCoordinatesAndProps
+from .lcm import lmahal
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -63,8 +65,7 @@ def ImportMol(mol: Chem.Mol) -> tuple[Chem.Mol, bool]:
 
 # ----------------------------------------------------------------------------------------------------------------------
 def DoLCD(coords, w, thr: float):
-    """
-    Core function for computing 3D LCD descriptors, starting from the coordinates and the partial charges.
+    """Core function for computing 3D LCD descriptors, starting from the coordinates and the partial charges.
     :param coords: molecular 3D coordinate matrix (n_at x 3)
     w(n_at x 1): molecular property to consider
     :param w: partial charges
@@ -72,7 +73,6 @@ def DoLCD(coords, w, thr: float):
     :return:
     x_all: descriptors  for the molecules (1 x p)
     """
-
     # calculates lcm with weight scheme 1 (all charges)
     res = lmahal(coords, w)
 
@@ -86,14 +86,12 @@ def DoLCD(coords, w, thr: float):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def ApplySign(w, res, thr=0.0):
-    """
-    applies the sign to negatively charged atoms.
+    """Applies the sign to negatively charged atoms.
     :param w: partial charge
     :param res: computed atomic descriptors
     :param thr: threshold to consider atoms as negatively charged (default is 0); other atoms are removed
     :return: computed atomic descriptors with adjusted sign
     """
-
     # find negative weights and assigns a "-"
     a, _ = np.where(w < 0)
     res[a, :] *= -1
@@ -107,8 +105,7 @@ def ApplySign(w, res, thr=0.0):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def ExtractLCM(data, start=0, end=100, step=10):
-    """
-    extracts descriptors referred to the whole molecule from numbers referred to atoms, e.g., R and I.
+    """Extracts descriptors referred to the whole molecule from numbers referred to atoms, e.g., R and I.
     ====================================================================================================================
     :param:
     data (n_atom x p): atomic description
@@ -120,14 +117,11 @@ def ExtractLCM(data, start=0, end=100, step=10):
     labels(1 x p1): descriptor labels
     ====================================================================================================================
     """
-
     # Calculates percentiles according to the specified settings
     perc = range(start, end + 1, step)
     data = np.array(data)
     x = np.percentile(data, list(perc), axis=0)
-    x = np.concatenate(
-        (x[:, 0], x[:, 1], x[:, 2]), axis=0
-    )  # Flattens preserving the ordering
+    x = np.concatenate((x[:, 0], x[:, 1], x[:, 2]), axis=0)  # Flattens preserving the ordering
 
     # rounds the descriptors to the third decimal place
     x = np.round(x, 3)

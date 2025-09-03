@@ -1,4 +1,6 @@
 # %%
+from __future__ import annotations
+
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -15,8 +17,7 @@ def PrepareMol(
     seed: int = 26,
     max_attempts: int = 5,
 ) -> Chem.Mol:
-    """
-    Sets atomic properties if they are specified in the sdf, otherwise computes them. If specified, computes 3D coordinates
+    """Sets atomic properties if they are specified in the sdf, otherwise computes them. If specified, computes 3D coordinates
     using MMF.  The default number of iterations is 200, but it is progressively increased to 5000 (with a step of 500)
     in case convergence is not reached.
     ====================================================================================================================
@@ -107,9 +108,7 @@ def GetCharge(mol: Chem.Mol, property_name: str, do_charge: bool):
 
 
 def CheckMol(mol: Chem.Mol, property_name: str, do_charge: bool) -> bool:
-    """
-    checks if the property (as specified by "property_name") is annotated and gives err = 0 if it is
-    """
+    """Checks if the property (as specified by "property_name") is annotated and gives err = 0 if it is"""
     n_atoms = mol.GetNumAtoms()
 
     if do_charge:
@@ -122,16 +121,13 @@ def CheckMol(mol: Chem.Mol, property_name: str, do_charge: bool) -> bool:
 
     else:
         properties = mol.GetPropsAsDict()
-        string_values = properties[
-            property_name
-        ]  # extracts the property according to the set name
+        string_values = properties[property_name]  # extracts the property according to the set name
         if string_values == "" or string_values == [""]:
             return True
 
     if n_atoms < 4:
         return True
-    else:
-        return False
+    return False
 
 
 def OptGeometry(
@@ -178,14 +174,7 @@ def PrepareMolFromSDF(
 
     for ix, mol in tqdm(enumerate(vs_library), total=n_mols):
         mol, _, err = PrepareMol(
-            mol,
-            do_geometry,
-            do_charge,
-            property_name,
-            max_iter,
-            mmffvariant,
-            seed,
-            max_attempts,
+            mol, do_geometry, do_charge, property_name, max_iter, mmffvariant, seed, max_attempts
         )
 
         if err:
@@ -196,11 +185,8 @@ def PrepareMolFromSDF(
     return vs_library_prepared
 
 
-def GetCoordinatesAndProps(
-    mol: Chem.Mol, property_name="partial_charges", do_charge=True
-):
-    """
-    Extracts all of the useful chemical information, i.e., the partial charge and the coordinates and formats it
+def GetCoordinatesAndProps(mol: Chem.Mol, property_name="partial_charges", do_charge=True):
+    """Extracts all of the useful chemical information, i.e., the partial charge and the coordinates and formats it
     for atomic centred covariance matrix calculation.
     ====================================================================================================================
     :param
@@ -214,7 +200,6 @@ def GetCoordinatesAndProps(
     Francesca Grisoni, 05/2018, v. beta
     ETH Zurich
     """
-
     # molecule preparation
     mol, property_name, err = GetCharge(mol, property_name, do_charge)
 

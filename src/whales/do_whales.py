@@ -1,5 +1,4 @@
-"""
-# =====================================================================================
+"""# =====================================================================================
 # * Weighted Holistic Atom Localization and Entity Shape (WHALES) descriptors *
 #   v. 1, May 2018
 # -------------------------------------------------------------------------------------
@@ -19,54 +18,51 @@
 """
 
 # pylint: disable=consider-using-assignment-expr
+from __future__ import annotations
 
-from typing import List, Tuple
+from typing import TYPE_CHECKING
 
-import lcm
-import mol_properties
 import numpy as np
-from numpy.typing import NDArray
 from rdkit import Chem
-from rdkit.Chem import Mol  # pylint: disable=unused-import
 
-PRECISION = np.float64
+import whales.lcm
+import whales.mol_properties
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+    from rdkit.Chem import Mol
 
 
 # -----------------------------------------------------------------------------
 def whales_from_mol(
-    mol: "Mol | None",
-    charge_threshold: int = 0,
-    do_charge: bool = True,
-    property_name: str = "",
-) -> "Tuple[np.ndarray, list | None]":
+    mol: Mol | None, charge_threshold: int = 0, do_charge: bool = True, property_name: str = ""
+) -> tuple[NDArray[np.float64], list[str] | None]:
     # check for correct molecule import, throw an error if import/sanitization fail
     mol = import_mol(mol)
 
     errors = 0
 
-    lab: "List[str] | None" = None
+    lab: list[str] | None = None
     if not mol:
-        x: NDArray[np.floating] = np.full((33,), -999.0, dtype=PRECISION)
+        x = np.full((33,), -999.0, dtype=np.float64)
         errors += 1
         print("Molecule not loaded.")
     else:
         # coordinates and partial charges (checks for computed charges)
-        coords_w = mol_properties.get_coordinates_and_prop(
-            mol, property_name, do_charge
-        )
+        coords_w = whales.mol_properties.get_coordinates_and_prop(mol, property_name, do_charge)
         if coords_w:  # no errors in charge
             coords, w = coords_w
             # does descriptors
             x, lab = do_lcd(coords, w, charge_threshold)
         else:
-            x = np.full((33,), -999.0, dtype=PRECISION)
+            x = np.full((33,), -999.0, dtype=np.float64)
             errors += 1
             print("No computed charges.")
 
     return x, lab
 
 
-def import_mol(mol: "Mol | None") -> "Mol | None":
+def import_mol(mol: Mol | None) -> Mol | None:
     # options for sanitization
     san_opt = Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
 
@@ -86,10 +82,9 @@ def import_mol(mol: "Mol | None") -> "Mol | None":
 
 # -----------------------------------------------------------------------------
 def do_lcd(
-    coords: NDArray[np.floating], w: NDArray[np.floating], thr: float
-) -> "Tuple[np.ndarray, list]":
-    """
-    Core function for computing 3D LCD descriptors,
+    coords: NDArray[np.float64], w: NDArray[np.float64], thr: float
+) -> tuple[NDArray[np.float64], list[str]]:
+    """Core function for computing 3D LCD descriptors,
     starting from the coordinates and the partial charges.
 
     Args:
@@ -102,9 +97,8 @@ def do_lcd(
             x_all: descriptors  for the molecules (1 x p)
             lab_all: descriptors labels (1 x p)
     """
-
-    # calculates lcm with weight scheme 1 (all charges)
-    res = lcm.lmahal(coords, w)
+    # calculates whales.lcm with weight scheme 1 (all charges)
+    res = whales.lcm.lmahal(coords, w)
 
     # applies sign
     res = apply_sign(w, res, thr)
@@ -116,10 +110,9 @@ def do_lcd(
 
 # -----------------------------------------------------------------------------
 def apply_sign(
-    w: NDArray[np.floating], res: NDArray[np.floating], thr: float = 0.0
-) -> NDArray[np.floating]:
-    """
-    applies the sign to negatively charged atoms.
+    w: NDArray[np.float64], res: NDArray[np.float64], thr: float = 0.0
+) -> NDArray[np.float64]:
+    """Applies the sign to negatively charged atoms.
 
     Args:
         w: partial charge
@@ -130,28 +123,20 @@ def apply_sign(
     Returns:
         computed atomic descriptors with adjusted sign
     """
-
     # find negative weights and assigns a "-"
     a, _ = np.where(w < 0)
     res[a, :] *= -1
 
     # removes atoms with abs(w) smaller than the thr
     a, _ = np.where(abs(w) < thr)
-    res = np.delete(res, a, 0)
-
-    return res
+    return np.delete(res, a, 0)
 
 
 # -----------------------------------------------------------------------------
 def extract_lcm(
-    data: NDArray[np.floating],
-    start: int = 0,
-    end: int = 100,
-    step: int = 10,
-    lab_string: str = "",
-) -> "Tuple[NDArray[np.floating], List[str]]":
-    """
-    extracts descriptors referred to the whole molecule from numbers referred to atoms,
+    data: NDArray[np.float64], start: int = 0, end: int = 100, step: int = 10, lab_string: str = ""
+) -> tuple[NDArray[np.float64], list[str]]:
+    """Extracts descriptors referred to the whole molecule from numbers referred to atoms,
     e.g., R and I.
 
     Args:
@@ -166,7 +151,6 @@ def extract_lcm(
             x: molecular description based on percentiles (1 x p1)
             labels: descriptor labels (1 x p1)
     """
-
     # Calculates percentiles according to the specified settings
     perc = range(start, end + 1, step)
 
@@ -180,9 +164,6 @@ def extract_lcm(
 
     # produces labels strings
     strings = ["R_", "I_", "IR_"]
-    labels: list[str] = []
-    for j in strings:
-        for i in perc:
-            labels.append(j + lab_string + str(int(i / 10)))
+    labels = [j + lab_string + str(int(i / 10)) for j in strings for i in perc]
 
     return x, labels
