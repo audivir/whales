@@ -6,3 +6,5 @@ build/
 out.sdf
 temp_out_hits.sdf
 WHALES_after.csv
+dist/
+.pdm-build/
