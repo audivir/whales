@@ -17,7 +17,6 @@
 # =====================================================================================
 """
 
-# pylint: disable=consider-using-assignment-expr
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -75,7 +74,7 @@ def import_mol(mol: Mol | None) -> Mol | None:
     sanit_fail = Chem.SanitizeMol(mol, catchErrors=True, sanitizeOps=san_opt)
     if sanit_fail:  # type: ignore[truthy-bool]
         raise ValueError(sanit_fail)
-        # err = 1
+        # err = 1 # noqa: ERA001
 
     return mol
 

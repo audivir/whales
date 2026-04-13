@@ -1,14 +1,10 @@
-[build-system]
-requires = ["setuptools >= 77.0.3"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "whales"
 dynamic = ["version"]
 dependencies = ["rdkit", "seaborn", "matplotlib"]
 requires-python = ">=3.9,<4.0"
 authors = [{ name = "Fransesca Grisoni" }]
-description = "changethis"
+description = "Refactoring of WHALES fingerprint code"
 readme = "README.md"
 license = "MIT"
 
@@ -17,14 +13,15 @@ license = "MIT"
 [project.optional-dependencies]
 dev = ["ruff", "mypy", "pytest", "coverage[toml]", "vulture"]
 
-[tool.setuptools]
-dynamic = { version = { attr = "whales.__version__" } }
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
-[tool.setuptools.packages.find]
-where = ["src"] # changethis
+[tool.pdm.version]
+source = "file"
+path = "whales/__init__.py"
 
 [tool.mypy]
-python_version = "3.9"
 strict = true
 disable_error_code = "import-untyped"
 enable_error_code = """type-arg,no-untyped-def,redundant-cast,redundant-self,comparison-overlap,
@@ -49,7 +46,7 @@ warn_unreachable = true
 exclude = ["build", "docs"]
 
 [tool.coverage.run]
-source = ["tests", "changethis"]
+source = ["tests", "whales"]
 command_line = "-m pytest"
 branch = true
 
@@ -73,69 +70,47 @@ testpaths = ["tests"]
 
 [tool.vulture]
 ignore_names = ["_*", "unused_*"]
-paths = [".whitelist", "tests", "changethis"]
+paths = [".whitelist", "tests", "whales"]
 make_whitelist = true
 sort_by_size = true
 verbose = false
 
 [tool.ruff]
-fix = true
-show-fixes = true
-
-exclude = [".git", ".idea", ".mypy_cache", ".tox", ".venv", ".nox"]
-
-target-version = "py39"
 line-length = 100
-indent-width = 4
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 dummy-variable-rgx = "^(dummy_.*|unused_.*|_)$"
 
 select = ["ALL"]
 
-fixable = ["ALL"]
-
 ignore = [
+  "PLC0415", # `import` should be at the top-level of a file
   "ISC001", # implicit-str-concat
   "COM812", # missing-trailing-comma
-  # ALLOW PICKLE USE
   "S301", # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
-  # IGNORE TODO
-  # "TD002",  # Missing author in TODO; try: `# TODO(<author_name>): ...` or `# TODO @<author_name>: ...`
   "TD003",  # Missing issue link on the line following this TODO
   "FIX002", # Line contains TODO, consider resolving the issue
   "FBT001", # Boolean-typed positional argument in function definition
   "FBT002", # Boolean default positional argument
   "FBT003", # Boolean positional value in function call
-  # "T201",  # `print` found
-  "NPY002", # Replace legacy `np.random.permutation` call with `np.random.Generator.permutation`
   "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
-  # EXCEPTIONS
   "EM101",  # Exception must not use a string literal, assign to variable first
   "EM102",  # Exception must not use an f-string literal, assign to variable first
   "TRY003", # Avoid specifying long messages outside the exception class
   "TRY300", # Use of else blocks in try/except
-  # DOCSTRINGS
-  #"D102",  # Missing docstring in public method
-  #"D103",  # Missing docstring in public function
   "D105", # Missing docstring in magic method
-  # "D107",  # Missing docstring in `__init__`
-  #"D415",  # First line should end with a period, question mark, or exclamation point
+  # custom
+  "D103", # Missing docstring in public function
+  "D205", # 1 blank line required between summary line and description"
+  "D415", # First line should end with a period, question mark, or exclamation point
+
+  "T201", # `print` found
+  "TD002", # Missing author in TODO
+  "TD004", # Missing colon in TODO
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
-
-[tool.ruff.lint.pylint]
-max-args = 10
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
@@ -147,7 +122,6 @@ split-on-trailing-comma = false
 
 # conf.py automatically created by Sphinx
 "docs/conf.py" = ["INP001", "D100", "ERA001", "A"]
-"noxfile.py" = ["INP001"]
 
 # Test files do not need to have docstrings at each test function
 # S101: assert, PLR2004: magic value comparison, T20: print statements

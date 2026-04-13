@@ -11,7 +11,6 @@
 # =====================================================================================
 """
 
-# pylint: disable=consider-using-assignment-expr
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -106,7 +105,7 @@ def prepare_mol(mol: Mol, property_name: str, do_charge: bool) -> tuple[Mol, str
                 return mol, property_name, err
 
             # prepares molecule
-            # mol = Chem.AddHs(mol)
+            # mol = Chem.AddHs(mol) # noqa: ERA001
             mol = Chem.RemoveHs(mol)
             n_at = mol.GetNumAtoms()
             # takes properties

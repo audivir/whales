@@ -5,14 +5,13 @@
 #     with the specified settings
 """
 
-# pylint: disable=consider-using-assignment-expr
 from __future__ import annotations
 
 from collections import Counter
 from io import BytesIO
 from typing import TYPE_CHECKING
 
-import matplotlib.patheffects as PathEffects
+import matplotlib.patheffects as PathEffects  # noqa: N812
 import matplotlib.pyplot as plt
 import matplotlib.text
 import numpy as np
@@ -26,7 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
 
 
-def prepare_mol_from_sdf(
+def prepare_mol_from_sdf(  # noqa: PLR0913
     filename_in: str,
     do_geometry: bool = True,
     do_charge: bool = False,
@@ -60,7 +59,7 @@ def prepare_mol_from_sdf(
     return vs_library_prepared
 
 
-def prepare_mol(
+def prepare_mol(  # noqa: PLR0913
     mol: Mol | None,
     do_geometry: bool = True,
     do_charge: bool = True,
@@ -89,7 +88,7 @@ def prepare_mol(
     sanitize_fail = Chem.SanitizeMol(mol, catchErrors=True, sanitizeOps=san_opt)
     if sanitize_fail:  # type: ignore[truthy-bool]
         raise ValueError(sanitize_fail)
-        # err = 1
+        # err = 1 # noqa: ERA001
 
     if do_geometry:
         mol, opt_err = opt_geometry(mol, max_iter, mmffvariant, seed, max_attempts)
@@ -206,8 +205,8 @@ def do_map(
     fig_name: str | None = None,
     lab_atom: bool = False,
     text: bool = False,
-    # MapMin: int = 0, # not used
-    # MapMax: int = 1, # not used
+    # MapMin: int = 0, # not used # noqa: ERA001
+    # MapMax: int = 1, # not used # noqa: ERA001
 ) -> None:
     # settings
 
@@ -253,8 +252,8 @@ def do_map(
 
     if text is True:
         for at in range(mol.GetNumAtoms()):
-            x = mol._atomPs[at][0]  # pylint: disable=protected-access
-            y = mol._atomPs[at][1]  # pylint: disable=protected-access
+            x = mol._atomPs[at][0]  # noqa: SLF001
+            y = mol._atomPs[at][1]  # noqa: SLF001
             plt.text(
                 x,
                 y,

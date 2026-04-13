@@ -1,3 +1,5 @@
+"""WHALES Fingerprint."""
+
 from __future__ import annotations
 
 from whales import lcm
